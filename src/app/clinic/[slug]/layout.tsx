@@ -1,10 +1,6 @@
 import { getClinicBySlug } from '@/lib/clinics'
 import type { CSSProperties } from 'react'
 
-// /clinic/[slug] altindaki tum sayfalari saran katman.
-// Klinik renklerini CSS degiskeni olarak aktarir.
-// Klinik yoksa cakilmasin diye guvenli varsayilan renkler kullanir;
-// "bulunamadi" karari sayfada (page.tsx) verilir.
 export default async function ClinicLayout({
   children,
   params,

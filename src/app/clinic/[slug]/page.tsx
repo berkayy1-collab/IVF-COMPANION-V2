@@ -9,11 +9,7 @@ export default async function ClinicWelcomePage({
 }) {
   const { slug } = await params
   const clinic = await getClinicBySlug(slug)
-
-  // Klinik yoksa "bulunamadi" sayfasini goster
-  if (!clinic) {
-    notFound()
-  }
+  if (!clinic) notFound()
 
   return (
     <main
@@ -23,11 +19,7 @@ export default async function ClinicWelcomePage({
       <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-lg">
         {clinic.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={clinic.logo_url}
-            alt={clinic.name}
-            className="mx-auto h-20 w-20 object-contain"
-          />
+          <img src={clinic.logo_url} alt={clinic.name} className="mx-auto h-20 w-20 object-contain" />
         ) : (
           <div
             className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl text-3xl font-bold text-white"
@@ -38,9 +30,7 @@ export default async function ClinicWelcomePage({
         )}
 
         <h1 className="mt-6 text-2xl font-bold text-gray-900">{clinic.name}</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          Tup bebek tedavinizde yaninizdayiz
-        </p>
+        <p className="mt-2 text-sm text-gray-500">Tup bebek tedavinizde yaninizdayiz</p>
 
         <div className="mt-8 flex flex-col gap-3">
           <Link
@@ -53,10 +43,7 @@ export default async function ClinicWelcomePage({
           <Link
             href={`/clinic/${clinic.slug}/login`}
             className="rounded-xl border-2 px-6 py-3 font-semibold"
-            style={{
-              borderColor: 'var(--clinic-primary)',
-              color: 'var(--clinic-primary)',
-            }}
+            style={{ borderColor: 'var(--clinic-primary)', color: 'var(--clinic-primary)' }}
           >
             Giris Yap
           </Link>
