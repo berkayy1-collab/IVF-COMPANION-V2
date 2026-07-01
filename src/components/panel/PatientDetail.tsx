@@ -6,9 +6,7 @@ import {
   User, Calendar, Pill, Activity, MessageSquare, FileText,
   Phone, MapPin, Heart, AlertCircle, Send, Plus, ExternalLink
 } from 'lucide-react'
-
 type Tab = 'overview' | 'medications' | 'symptoms' | 'messages' | 'notes'
-
 interface Props {
   patient: any
   medications: any[]
@@ -18,7 +16,6 @@ interface Props {
   clinicalNotes: any[]
   currentUserId: string
 }
-
 const SL: Record<string, string> = {
   bleeding: 'Kanama', cramping: 'Kramp', nausea: 'Mide Bulantisi',
   fatigue: 'Yorgunluk', headache: 'Bas Agrisi', bloating: 'Siskinlik',
@@ -27,7 +24,6 @@ const SL: Record<string, string> = {
   fainting: 'Bayilma', fever: 'Ates',
 }
 const CRIT = ['heavy_bleeding', 'severe_pain', 'fainting', 'fever']
-
 function timeAgo(d: string) {
   const min = Math.floor((Date.now() - new Date(d).getTime()) / 60000)
   if (min < 1) return 'Az once'
@@ -36,17 +32,14 @@ function timeAgo(d: string) {
   if (hr < 24) return `${hr} sa once`
   return new Date(d).toLocaleDateString('tr-TR')
 }
-
 function dayLabel(n: number) {
   if (n === 0) return 'Gun 0 (Transfer)'
   return n > 0 ? `Gun +${n}` : `Gun ${n}`
 }
-
 function transferDayCount(transferDate: string | null): number | null {
   if (!transferDate) return null
   return Math.floor((Date.now() - new Date(transferDate).getTime()) / 86400000)
 }
-
 export default function PatientDetail({
   patient, medications, symptomLogs, conversationId, messages: initialMessages, clinicalNotes, currentUserId
 }: Props) {
@@ -58,11 +51,9 @@ export default function PatientDetail({
   const [addingNote, setAddingNote] = useState(false)
   const [notes, setNotes] = useState(clinicalNotes)
   const supabase = createClient()
-
   const u = patient.users as any
   const fullName = u?.full_name ?? '—'
   const dayCount = transferDayCount(patient.transfer_date)
-
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
     if (!msgBody.trim() || !conversationId || sending) return
@@ -77,7 +68,6 @@ export default function PatientDetail({
     setMsgBody('')
     setSending(false)
   }
-
   async function addNote(e: React.FormEvent) {
     e.preventDefault()
     if (!noteBody.trim()) return
@@ -91,7 +81,6 @@ export default function PatientDetail({
     setNoteBody('')
     setAddingNote(false)
   }
-
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: 'overview', label: 'Genel', icon: User },
     { id: 'medications', label: 'Ilaclar', icon: Pill },
@@ -99,7 +88,6 @@ export default function PatientDetail({
     { id: 'messages', label: 'Mesajlar', icon: MessageSquare },
     { id: 'notes', label: 'Notlar', icon: FileText },
   ]
-
   return (
     <div>
       <div className="flex items-start justify-between mb-6">
@@ -125,7 +113,6 @@ export default function PatientDetail({
           <ExternalLink className="w-3.5 h-3.5" /> Profili Duzenle
         </Link>
       </div>
-
       <div className="flex gap-1 border-b mb-6 overflow-x-auto">
         {tabs.map(t => {
           const Icon = t.icon
@@ -139,7 +126,6 @@ export default function PatientDetail({
           )
         })}
       </div>
-
       {tab === 'overview' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,7 +155,6 @@ export default function PatientDetail({
               </div>
               <Link href={`/panel/patients/${patient.id}/dates`} className="text-xs text-rose-600 hover:underline">Tarihleri duzenle →</Link>
             </div>
-
             <div className="bg-white border rounded-xl p-5 space-y-3">
               <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4 text-rose-500" /> Iletisim</h3>
               <div className="space-y-2 text-sm">
@@ -191,7 +176,6 @@ export default function PatientDetail({
                 </div>
               </div>
             </div>
-
             <div className="bg-white border rounded-xl p-5 space-y-3">
               <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Heart className="w-4 h-4 text-rose-500" /> Medikal Bilgi</h3>
               <div className="space-y-2 text-sm">
@@ -214,7 +198,6 @@ export default function PatientDetail({
                 {!patient.allergies && !patient.chronic_conditions && <span className="text-gray-400">Bilgi girilmemis</span>}
               </div>
             </div>
-
             <div className="bg-white border rounded-xl p-5 space-y-3">
               <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-rose-500" /> Acil Iletisim</h3>
               {patient.emergency_contact_name ? (
@@ -227,14 +210,12 @@ export default function PatientDetail({
               )}
             </div>
           </div>
-
           {patient.notes && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
               <p className="text-sm font-medium text-amber-800 mb-1">Klinik Notlar</p>
               <p className="text-sm text-amber-700">{patient.notes}</p>
             </div>
           )}
-
           {patient.anamnesis_file_url && (
             <div className="bg-white border rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -246,7 +227,6 @@ export default function PatientDetail({
           )}
         </div>
       )}
-
       {tab === 'medications' && (
         <div className="space-y-3">
           <div className="flex justify-between items-center">
@@ -257,35 +237,108 @@ export default function PatientDetail({
             </Link>
           </div>
           {medications.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henuz ilac eklenmemis.</p>}
-          {medications.map((med: any) => (
-            <div key={med.id} className="bg-white border rounded-xl p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{med.name}</p>
+          {medications.map((med: any) => {
+            const hasDays = med.transfer_day_start != null && med.transfer_day_end != null
+            let calendarDayCount = 0
+            if (!hasDays && med.start_date && med.end_date) {
+              const s = new Date(med.start_date)
+              const e = new Date(med.end_date)
+              const diff = Math.round((e.getTime() - s.getTime()) / 86400000) + 1
+              if (diff > 0) calendarDayCount = diff
+            }
+            const effectiveTreatmentDays = med.treatment_days || calendarDayCount
+            const days = hasDays
+              ? Array.from({ length: med.transfer_day_end - med.transfer_day_start + 1 }, (_, i) => med.transfer_day_start + i)
+              : effectiveTreatmentDays
+              ? Array.from({ length: effectiveTreatmentDays }, (_, i) => i + 1)
+              : []
+            // Doktorun ilaç ekleme formunda gün gün ayrı ayrı kaydettiği dozlar (varsa)
+            const dosesMap = new Map<number, number>()
+            if (Array.isArray(med.daily_doses)) {
+              med.daily_doses.forEach((d: any) => {
+                if (d && typeof d.day === 'number' && d.dose != null) dosesMap.set(d.day, d.dose)
+              })
+            }
+            return (
+              <div key={med.id} className="bg-white border rounded-xl overflow-hidden">
+                {/* İlaç başlık */}
+                <div className="p-4">
+                  <p className="font-semibold text-gray-900">{med.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1">
-                    {med.dosage && <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full">{med.dosage}</span>}
                     {med.route && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{med.route}</span>}
-                    {med.transfer_day_start != null ? (
+                    {med.daily_dosage && (
+                      <span className="text-xs bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full font-medium">
+                        Günlük (ort.): {med.daily_dosage} {med.dosage || ""}
+                      </span>
+                    )}
+                    {med.total_dosage && (
+                      <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">
+                        Toplam: {med.total_dosage}
+                      </span>
+                    )}
+                    {dosesMap.size > 0 && (
+                      <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                        Gün gün özel plan
+                      </span>
+                    )}
+                    {hasDays ? (
                       <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
                         {dayLabel(med.transfer_day_start)} → {dayLabel(med.transfer_day_end)}
                       </span>
-                    ) : (
-                      (med.start_date || med.end_date) && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                          {med.start_date ?? '?'} → {med.end_date ?? '?'}
-                        </span>
-                      )
-                    )}
+                    ) : (med.start_date || med.end_date) ? (
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        {med.start_date ?? "?"} → {med.end_date ?? "?"}
+                      </span>
+                    ) : null}
                   </div>
-                  {med.times_of_day?.length > 0 && <p className="text-xs text-gray-500 mt-1">Saatler: {med.times_of_day?.join(', ')}</p>}
-                  {med.instructions && <p className="text-xs text-gray-500 mt-1">{med.instructions}</p>}
+                  {med.times_of_day?.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Saat: {med.times_of_day.join(", ")}
+                    </p>
+                  )}
+                  {med.notes && <p className="text-xs text-gray-400 mt-1 italic">{med.notes}</p>}
                 </div>
+                {/* Gün gün plan */}
+                {days.length > 0 && (
+                  <div className="border-t border-gray-100">
+                    <div className="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                      Günlük Plan ({days.length} gün)
+                    </div>
+                    <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+                      {days.map((d: number, idx: number) => {
+                        const label = hasDays
+                          ? d === 0 ? "Gün 0 — Transfer Günü" : d > 0 ? `Gün +${d}` : `Gün ${d}`
+                          : `${idx + 1}. Gün`
+                        const isTransfer = hasDays && d === 0
+                        const doseForDay = dosesMap.get(d)
+                        return (
+                          <div key={d} className={`flex items-center justify-between px-4 py-2.5 ${isTransfer ? "bg-rose-50" : ""}`}>
+                            <span className={`text-sm font-medium ${isTransfer ? "text-rose-700" : "text-gray-700"}`}>
+                              {label}
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm text-gray-900 font-semibold">
+                                {doseForDay != null
+                                  ? `${doseForDay} ${med.dosage || ""}`
+                                  : med.daily_dosage
+                                  ? `${med.daily_dosage} ${med.dosage || ""}`
+                                  : med.dosage || "—"}
+                              </span>
+                              {med.times_of_day?.length > 0 && (
+                                <span className="text-xs text-gray-400">{med.times_of_day.join(" · ")}</span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
-
       {tab === 'symptoms' && (
         <div className="space-y-3">
           {symptomLogs.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henuz belirti kaydedilmemis.</p>}
@@ -311,7 +364,6 @@ export default function PatientDetail({
           })}
         </div>
       )}
-
       {tab === 'messages' && (
         <div className="flex flex-col h-[500px] bg-white border rounded-xl overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -342,7 +394,6 @@ export default function PatientDetail({
           )}
         </div>
       )}
-
       {tab === 'notes' && (
         <div className="space-y-4">
           <form onSubmit={addNote} className="bg-white border rounded-xl p-4 space-y-3">
