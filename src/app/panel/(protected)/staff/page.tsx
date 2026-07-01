@@ -2,10 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 const ROLE_LABELS: Record<string, string> = {
-  nurse: 'Hemsire',
+  nurse: 'Hemşire',
   doctor: 'Doktor',
-  clinic_admin: 'Klinik Yoneticisi',
-  super_admin: 'Super Admin',
+  clinic_admin: 'Klinik Yöneticisi',
+  super_admin: 'Süper Admin',
 }
 
 const ROLE_STYLE: Record<string, string> = {
@@ -27,7 +27,7 @@ export default async function StaffPage() {
     .single()
 
   if (!appUser?.clinic_id) redirect('/panel/login')
-  if (!['clinic_admin', 'super_admin'].includes(appUser.role)) redirect('/panel')
+  if (!['clinic_admin', 'super_admin', 'nurse'].includes(appUser.role)) redirect('/panel')
 
   const { data: staff } = await supabase
     .from('users')
@@ -40,7 +40,7 @@ export default async function StaffPage() {
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Personel</h1>
-        <p className="text-sm text-gray-500 mt-1">Klinige kayitli personel listesi.</p>
+        <p className="text-sm text-gray-500 mt-1">Kliniğe kayıtlı personel listesi.</p>
       </div>
 
       <div className="bg-white rounded-xl border overflow-hidden">
@@ -50,14 +50,14 @@ export default async function StaffPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">Ad Soyad</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">E-posta</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Rol</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Kayit Tarihi</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">Kayıt Tarihi</th>
             </tr>
           </thead>
           <tbody>
             {!staff?.length && (
               <tr>
                 <td colSpan={4} className="text-center py-10 text-gray-400 text-sm">
-                  Personel bulunamadi.
+                  Personel bulunamadı.
                 </td>
               </tr>
             )}
@@ -80,9 +80,9 @@ export default async function StaffPage() {
       </div>
 
       <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-        <p className="text-sm font-semibold text-amber-800 mb-1">Yeni Personel Eklemek Icin</p>
+        <p className="text-sm font-semibold text-amber-800 mb-1">Yeni Personel Eklemek İçin</p>
         <p className="text-sm text-amber-700">
-          Personelin once sisteme kayit olmasi, ardindan Supabase SQL Editor ile rolunun ayarlanmasi gerekir:
+          Personelin önce sisteme kayıt olması, ardından Supabase SQL Editor ile rolünün ayarlanması gerekir:
         </p>
         <pre className="mt-2 text-xs bg-amber-100 rounded p-3 text-amber-900 font-mono overflow-x-auto whitespace-pre-wrap">
 {`UPDATE public.users

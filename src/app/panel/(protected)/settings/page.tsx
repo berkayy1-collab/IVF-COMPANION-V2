@@ -14,7 +14,7 @@ export default async function SettingsPage() {
     .single()
 
   if (!appUser?.clinic_id) redirect('/panel/login')
-  if (!['clinic_admin', 'super_admin'].includes(appUser.role)) redirect('/panel')
+  if (!['clinic_admin', 'super_admin', 'nurse'].includes(appUser.role)) redirect('/panel')
 
   const { data: clinic } = await supabase
     .from('clinics')
@@ -27,8 +27,8 @@ export default async function SettingsPage() {
   return (
     <div className="p-6">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Klinik Ayarlari</h1>
-        <p className="text-sm text-gray-500 mt-1">Klinik bilgilerini ve gorünumunu duzenleyin.</p>
+        <h1 className="text-xl font-bold text-gray-900">Klinik Ayarları</h1>
+        <p className="text-sm text-gray-500 mt-1">Klinik bilgilerini ve görünümünü düzenleyin.</p>
       </div>
       <SettingsForm
         clinicId={clinic.id}

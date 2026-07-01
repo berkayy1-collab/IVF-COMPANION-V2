@@ -11,7 +11,7 @@ export default function Sidebar({ firstName, role, clinicName, openAlerts, unrea
   const pathname = usePathname()
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const isAdmin = ['clinic_admin','super_admin'].includes(role)
+  const isAdmin = ['clinic_admin','super_admin','nurse'].includes(role)
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const handleLogout = async () => {
