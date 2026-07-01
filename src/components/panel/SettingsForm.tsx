@@ -44,7 +44,7 @@ export default function SettingsForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Klinik Adi</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Klinik Adı</label>
         <input
           type="text"
           value={name}
@@ -66,7 +66,7 @@ export default function SettingsForm({
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Iletisim E-postasi</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">İletişim E-postası</label>
         <input
           type="email"
           value={email}

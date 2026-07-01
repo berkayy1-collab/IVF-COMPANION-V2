@@ -45,11 +45,11 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
     const path = `${patient.id}/anamnez-${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('patient-files').upload(path, file, { upsert: true })
     if (error) {
-      setMessage('Dosya hatasi: ' + error.message)
+      setMessage('Dosya hatası: ' + error.message)
     } else {
       await supabase.from('patients').update({ anamnesis_file_url: path }).eq('id', patient.id)
       setFilePath(path)
-      setMessage('Dosya yuklendi.')
+      setMessage('Dosya yüklendi.')
     }
     setUploading(false)
   }
@@ -93,24 +93,24 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
     <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
 
       <section className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Kisisel Bilgiler</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Kişisel Bilgiler</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
             <input type="tel" value={form.phone} onChange={e => upd('phone', e.target.value)} placeholder="+90 555 000 00 00" className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sehir</label>
-            <input type="text" value={form.city} onChange={e => upd('city', e.target.value)} placeholder="Istanbul" className={inputCls} />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Şehir</label>
+            <input type="text" value={form.city} onChange={e => upd('city', e.target.value)} placeholder="İstanbul" className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Dogum Tarihi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Doğum Tarihi</label>
             <input type="date" value={form.date_of_birth} onChange={e => upd('date_of_birth', e.target.value)} className={inputCls} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Kan Grubu</label>
             <select value={form.blood_type} onChange={e => upd('blood_type', e.target.value)} className={inputCls}>
-              <option value="">Secin</option>
+              <option value="">Seçin</option>
               {BLOOD_TYPES.map(b => <option key={b} value={b}>{b}</option>)}
             </select>
           </div>
@@ -118,35 +118,35 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
       </section>
 
       <section className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Medikal Gecmis</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Medikal Geçmiş</h2>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Alerjiler</label>
           <textarea value={form.allergies} onChange={e => upd('allergies', e.target.value)}
-            rows={2} placeholder="Ilac, gida alerjileri..." className={inputCls} />
+            rows={2} placeholder="İlaç, gıda alerjileri..." className={inputCls} />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kronik Hastaliklar</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Kronik Hastalıklar</label>
           <textarea value={form.chronic_conditions} onChange={e => upd('chronic_conditions', e.target.value)}
             rows={2} placeholder="Diyabet, hipertansiyon..." className={inputCls} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Onceki IVF Denemesi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Önceki IVF Denemesi</label>
             <input type="number" min="0" value={form.previous_ivf_count} onChange={e => upd('previous_ivf_count', e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Transfer Edilen Embriyo Sayisi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Transfer Edilen Embriyo Sayısı</label>
             <input type="number" min="0" value={form.embryo_count} onChange={e => upd('embryo_count', e.target.value)} placeholder="1" className={inputCls} />
           </div>
         </div>
       </section>
 
       <section className="bg-white rounded-xl border p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Acil Iletisim</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Acil İletişim</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
-            <input type="text" value={form.emergency_contact_name} onChange={e => upd('emergency_contact_name', e.target.value)} placeholder="Es, anne, baba..." className={inputCls} />
+            <input type="text" value={form.emergency_contact_name} onChange={e => upd('emergency_contact_name', e.target.value)} placeholder="Eş, anne, baba..." className={inputCls} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
@@ -158,7 +158,7 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
       <section className="bg-white rounded-xl border p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Klinik Notlar</h2>
         <textarea value={form.notes} onChange={e => upd('notes', e.target.value)}
-          rows={4} placeholder="Ozel durumlar, klinik gozlemler..." className={inputCls} />
+          rows={4} placeholder="Özel durumlar, klinik gözlemler..." className={inputCls} />
       </section>
 
       <section className="bg-white rounded-xl border p-6 space-y-3">
@@ -167,15 +167,15 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
         {filePath ? (
           <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
             <FileText className="w-5 h-5 text-green-600 flex-shrink-0" />
-            <span className="text-sm text-green-700 flex-1">Anamnez dosyasi mevcut</span>
-            <button type="button" onClick={viewFile} className="text-sm text-rose-600 hover:underline">Goruntule</button>
-            <button type="button" onClick={() => fileRef.current?.click()} className="text-sm text-gray-500 hover:text-gray-700">Degistir</button>
+            <span className="text-sm text-green-700 flex-1">Anamnez dosyası mevcut</span>
+            <button type="button" onClick={viewFile} className="text-sm text-rose-600 hover:underline">Görüntüle</button>
+            <button type="button" onClick={() => fileRef.current?.click()} className="text-sm text-gray-500 hover:text-gray-700">Değiştir</button>
           </div>
         ) : (
           <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
             className="flex items-center gap-2 w-full border-2 border-dashed border-gray-300 rounded-lg px-6 py-5 text-sm text-gray-500 hover:border-rose-400 hover:text-rose-600 transition-colors disabled:opacity-50 justify-center">
             <Upload className="w-5 h-5" />
-            {uploading ? 'Yukleniyor...' : 'PDF veya resim yukle (anamnez formu)'}
+            {uploading ? 'Yükleniyor...' : 'PDF veya resim yükle (anamnez formu)'}
           </button>
         )}
       </section>
@@ -191,7 +191,7 @@ export default function PatientProfileForm({ patient, patientName }: Props) {
         </button>
         <button type="button" onClick={() => router.back()}
           className="border px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-50">
-          Iptal
+          İptal
         </button>
       </div>
     </form>

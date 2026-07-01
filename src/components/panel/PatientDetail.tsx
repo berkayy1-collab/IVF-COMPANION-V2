@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import {
   User, Calendar, Pill, Activity, MessageSquare, FileText,
-  Phone, MapPin, Heart, AlertCircle, Send, Plus, ExternalLink
+  Phone, MapPin, Heart, AlertCircle, Send, Plus, ExternalLink, Trash2
 } from 'lucide-react'
 type Tab = 'overview' | 'medications' | 'symptoms' | 'messages' | 'notes'
 interface Props {
@@ -17,24 +17,24 @@ interface Props {
   currentUserId: string
 }
 const SL: Record<string, string> = {
-  bleeding: 'Kanama', cramping: 'Kramp', nausea: 'Mide Bulantisi',
-  fatigue: 'Yorgunluk', headache: 'Bas Agrisi', bloating: 'Siskinlik',
-  spotting: 'Lekelenme', breast_tenderness: 'Gogus Hassasiyeti',
-  heavy_bleeding: 'Yogun Kanama', severe_pain: 'Siddetli Agri',
-  fainting: 'Bayilma', fever: 'Ates',
+  bleeding: 'Kanama', cramping: 'Kramp', nausea: 'Mide Bulantısı',
+  fatigue: 'Yorgunluk', headache: 'Baş Ağrısı', bloating: 'Şişkinlik',
+  spotting: 'Lekelenme', breast_tenderness: 'Göğüs Hassasiyeti',
+  heavy_bleeding: 'Yoğun Kanama', severe_pain: 'Şiddetli Ağrı',
+  fainting: 'Bayılma', fever: 'Ateş',
 }
 const CRIT = ['heavy_bleeding', 'severe_pain', 'fainting', 'fever']
 function timeAgo(d: string) {
   const min = Math.floor((Date.now() - new Date(d).getTime()) / 60000)
-  if (min < 1) return 'Az once'
-  if (min < 60) return `${min} dk once`
+  if (min < 1) return 'Az önce'
+  if (min < 60) return `${min} dk önce`
   const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} sa once`
+  if (hr < 24) return `${hr} sa önce`
   return new Date(d).toLocaleDateString('tr-TR')
 }
 function dayLabel(n: number) {
-  if (n === 0) return 'Gun 0 (Transfer)'
-  return n > 0 ? `Gun +${n}` : `Gun ${n}`
+  if (n === 0) return 'Gün 0 (Transfer)'
+  return n > 0 ? `Gün +${n}` : `Gün ${n}`
 }
 function transferDayCount(transferDate: string | null): number | null {
   if (!transferDate) return null
@@ -44,6 +44,8 @@ export default function PatientDetail({
   patient, medications, symptomLogs, conversationId, messages: initialMessages, clinicalNotes, currentUserId
 }: Props) {
   const [tab, setTab] = useState<Tab>('overview')
+  const [meds, setMeds] = useState(medications)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [messages, setMessages] = useState(initialMessages)
   const [msgBody, setMsgBody] = useState('')
   const [sending, setSending] = useState(false)
@@ -81,9 +83,20 @@ export default function PatientDetail({
     setNoteBody('')
     setAddingNote(false)
   }
+  async function deleteMedication(id: string) {
+    if (!confirm('Bu ilacı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return
+    setDeletingId(id)
+    const { error } = await supabase.from('medications').delete().eq('id', id)
+    setDeletingId(null)
+    if (!error) {
+      setMeds(prev => prev.filter(m => m.id !== id))
+    } else {
+      alert('Silinemedi: ' + error.message)
+    }
+  }
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: 'overview', label: 'Genel', icon: User },
-    { id: 'medications', label: 'Ilaclar', icon: Pill },
+    { id: 'medications', label: 'İlaçlar', icon: Pill },
     { id: 'symptoms', label: 'Belirtiler', icon: Activity },
     { id: 'messages', label: 'Mesajlar', icon: MessageSquare },
     { id: 'notes', label: 'Notlar', icon: FileText },
@@ -99,18 +112,18 @@ export default function PatientDetail({
               patient.status === 'completed' ? 'bg-blue-100 text-blue-700' :
               'bg-gray-100 text-gray-600'
             }`}>
-              {patient.status === 'active' ? 'Aktif' : patient.status === 'completed' ? 'Tamamlandi' : 'Iptal'}
+              {patient.status === 'active' ? 'Aktif' : patient.status === 'completed' ? 'Tamamlandı' : 'İptal'}
             </span>
             {dayCount !== null && (
               <span className="text-xs text-gray-500">
-                {dayCount >= 0 ? `Transfer +${dayCount}. gun` : `Transfer ${Math.abs(dayCount)} gun sonra`}
+                {dayCount >= 0 ? `Transfer +${dayCount}. gün` : `Transfer ${Math.abs(dayCount)} gün sonra`}
               </span>
             )}
           </div>
         </div>
         <Link href={`/panel/patients/${patient.id}/profile`}
           className="flex items-center gap-1.5 text-sm text-rose-600 hover:text-rose-700 border border-rose-200 rounded-lg px-3 py-1.5 hover:bg-rose-50 transition-colors">
-          <ExternalLink className="w-3.5 h-3.5" /> Profili Duzenle
+          <ExternalLink className="w-3.5 h-3.5" /> Profili Düzenle
         </Link>
       </div>
       <div className="flex gap-1 border-b mb-6 overflow-x-auto">
@@ -142,21 +155,21 @@ export default function PatientDetail({
                 </div>
                 {patient.embryo_count && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Embriyo Sayisi</span>
+                    <span className="text-gray-500">Embriyo Sayısı</span>
                     <span className="font-medium">{patient.embryo_count}</span>
                   </div>
                 )}
                 {patient.previous_ivf_count > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Onceki IVF</span>
+                    <span className="text-gray-500">Önceki IVF</span>
                     <span className="font-medium">{patient.previous_ivf_count} deneme</span>
                   </div>
                 )}
               </div>
-              <Link href={`/panel/patients/${patient.id}/dates`} className="text-xs text-rose-600 hover:underline">Tarihleri duzenle →</Link>
+              <Link href={`/panel/patients/${patient.id}/dates`} className="text-xs text-rose-600 hover:underline">Tarihleri düzenle →</Link>
             </div>
             <div className="bg-white border rounded-xl p-5 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4 text-rose-500" /> Iletisim</h3>
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Phone className="w-4 h-4 text-rose-500" /> İletişim</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">E-posta</span>
@@ -167,11 +180,11 @@ export default function PatientDetail({
                   <span className="font-medium">{patient.phone ?? '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Sehir</span>
+                  <span className="text-gray-500">Şehir</span>
                   <span className="font-medium">{patient.city ?? '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Dogum Tarihi</span>
+                  <span className="text-gray-500">Doğum Tarihi</span>
                   <span className="font-medium">{patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString('tr-TR') : '—'}</span>
                 </div>
               </div>
@@ -191,22 +204,22 @@ export default function PatientDetail({
                 )}
                 {patient.chronic_conditions && (
                   <div>
-                    <span className="text-gray-500 block">Kronik Hastaliklar</span>
+                    <span className="text-gray-500 block">Kronik Hastalıklar</span>
                     <span className="text-gray-800">{patient.chronic_conditions}</span>
                   </div>
                 )}
-                {!patient.allergies && !patient.chronic_conditions && <span className="text-gray-400">Bilgi girilmemis</span>}
+                {!patient.allergies && !patient.chronic_conditions && <span className="text-gray-400">Bilgi girilmemiş</span>}
               </div>
             </div>
             <div className="bg-white border rounded-xl p-5 space-y-3">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-rose-500" /> Acil Iletisim</h3>
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2"><AlertCircle className="w-4 h-4 text-rose-500" /> Acil İletişim</h3>
               {patient.emergency_contact_name ? (
                 <div className="space-y-1 text-sm">
                   <p className="font-medium">{patient.emergency_contact_name}</p>
                   <p className="text-gray-500">{patient.emergency_contact_phone ?? '—'}</p>
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">Acil iletisim girilmemis</p>
+                <p className="text-sm text-gray-400">Acil iletişim girilmemiş</p>
               )}
             </div>
           </div>
@@ -222,7 +235,7 @@ export default function PatientDetail({
                 <FileText className="w-5 h-5 text-rose-500" />
                 <span className="text-sm font-medium text-gray-700">Anamnez Formu</span>
               </div>
-              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Yuklu</span>
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">Yüklü</span>
             </div>
           )}
         </div>
@@ -230,14 +243,14 @@ export default function PatientDetail({
       {tab === 'medications' && (
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-semibold text-gray-700">{medications.length} ilac kayitli</h3>
+            <h3 className="text-sm font-semibold text-gray-700">{meds.length} ilaç kayıtlı</h3>
             <Link href={`/panel/patients/${patient.id}/medications`}
               className="flex items-center gap-1 text-sm text-rose-600 hover:text-rose-700">
-              <Plus className="w-4 h-4" /> Ilac Ekle
+              <Plus className="w-4 h-4" /> İlaç Ekle
             </Link>
           </div>
-          {medications.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henuz ilac eklenmemis.</p>}
-          {medications.map((med: any) => {
+          {meds.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henüz ilaç eklenmemiş.</p>}
+          {meds.map((med: any) => {
             const hasDays = med.transfer_day_start != null && med.transfer_day_end != null
             let calendarDayCount = 0
             if (!hasDays && med.start_date && med.end_date) {
@@ -263,7 +276,18 @@ export default function PatientDetail({
               <div key={med.id} className="bg-white border rounded-xl overflow-hidden">
                 {/* İlaç başlık */}
                 <div className="p-4">
-                  <p className="font-semibold text-gray-900">{med.name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold text-gray-900">{med.name}</p>
+                    <button
+                      type="button"
+                      onClick={() => deleteMedication(med.id)}
+                      disabled={deletingId === med.id}
+                      className="text-gray-400 hover:text-red-600 disabled:opacity-50 shrink-0"
+                      title="İlacı sil"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {med.route && <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{med.route}</span>}
                     {med.daily_dosage && (
@@ -341,7 +365,7 @@ export default function PatientDetail({
       )}
       {tab === 'symptoms' && (
         <div className="space-y-3">
-          {symptomLogs.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henuz belirti kaydedilmemis.</p>}
+          {symptomLogs.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henüz belirti kaydedilmemiş.</p>}
           {symptomLogs.map((log: any) => {
             const isCrit = log.symptoms?.some((s: string) => CRIT.includes(s))
             return (
@@ -357,7 +381,7 @@ export default function PatientDetail({
                     </span>
                   ))}
                 </div>
-                {log.severity && <p className="text-xs text-gray-500 mt-1">Siddet: {log.severity}/10</p>}
+                {log.severity && <p className="text-xs text-gray-500 mt-1">Şiddet: {log.severity}/10</p>}
                 {log.notes && <p className="text-sm text-gray-700 mt-2">{log.notes}</p>}
               </div>
             )
@@ -367,7 +391,7 @@ export default function PatientDetail({
       {tab === 'messages' && (
         <div className="flex flex-col h-[500px] bg-white border rounded-xl overflow-hidden">
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.length === 0 && <p className="text-sm text-gray-400 text-center mt-8">Henuz mesaj yok.</p>}
+            {messages.length === 0 && <p className="text-sm text-gray-400 text-center mt-8">Henüz mesaj yok.</p>}
             {messages.map((msg: any) => {
               const isStaff = msg.sender_role !== 'patient'
               return (
@@ -382,7 +406,7 @@ export default function PatientDetail({
           </div>
           {conversationId ? (
             <form onSubmit={sendMessage} className="p-3 border-t flex gap-2">
-              <input type="text" value={msgBody} onChange={e => setMsgBody(e.target.value)} placeholder="Mesaj yazin..."
+              <input type="text" value={msgBody} onChange={e => setMsgBody(e.target.value)} placeholder="Mesaj yazın..."
                 className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500" />
               <button type="submit" disabled={sending || !msgBody.trim()}
                 className="bg-rose-600 text-white p-2 rounded-lg hover:bg-rose-700 disabled:opacity-50">
@@ -390,7 +414,7 @@ export default function PatientDetail({
               </button>
             </form>
           ) : (
-            <p className="p-3 text-sm text-gray-400 text-center border-t">Hasta henuz uygulama'ya giris yapmamis.</p>
+            <p className="p-3 text-sm text-gray-400 text-center border-t">Hasta henüz uygulamaya giriş yapmamış.</p>
           )}
         </div>
       )}
@@ -406,7 +430,7 @@ export default function PatientDetail({
               {addingNote ? 'Ekleniyor...' : 'Not Ekle'}
             </button>
           </form>
-          {( notes || []).length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henuz not eklenmemis.</p>}
+          {( notes || []).length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henüz not eklenmemiş.</p>}
           {(notes || []).map((note: any) => (
             <div key={note.id} className="bg-white border rounded-xl p-4">
               <div className="flex items-center justify-between mb-2">

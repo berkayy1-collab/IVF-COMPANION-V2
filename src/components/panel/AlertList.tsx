@@ -35,14 +35,14 @@ const SEV_BADGE = {
   medium: 'bg-yellow-100 text-yellow-800',
   low: 'bg-blue-100 text-blue-800',
 }
-const SEV_LABEL = { critical: 'Kritik', high: 'Yuksek', medium: 'Orta', low: 'Dusuk' }
+const SEV_LABEL = { critical: 'Kritik', high: 'Yüksek', medium: 'Orta', low: 'Düşük' }
 
 function timeAgo(d: string) {
   const min = Math.floor((Date.now() - new Date(d).getTime()) / 60000)
-  if (min < 1) return 'Az once'
-  if (min < 60) return `${min} dk once`
+  if (min < 1) return 'Az önce'
+  if (min < 60) return `${min} dk önce`
   const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr} sa once`
+  if (hr < 24) return `${hr} sa önce`
   return new Date(d).toLocaleDateString('tr-TR')
 }
 
@@ -83,7 +83,7 @@ export default function AlertList({ alerts: initial }: Props) {
               filter === f ? 'bg-rose-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            {f === 'open' ? 'Acik' : f === 'resolved' ? 'Cozuldu' : 'Tumü'}
+            {f === 'open' ? 'Açık' : f === 'resolved' ? 'Çözüldü' : 'Tümü'}
             {f === 'open' && openCount > 0 && (
               <span className="ml-1.5 bg-white text-rose-600 text-xs rounded-full px-1.5 py-0.5">
                 {openCount}
@@ -96,7 +96,7 @@ export default function AlertList({ alerts: initial }: Props) {
       {filtered.length === 0 && (
         <div className="text-center py-16 text-gray-400">
           <CheckCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="text-sm">Bu filtrede uyari yok.</p>
+          <p className="text-sm">Bu filtrede uyarı yok.</p>
         </div>
       )}
 
@@ -122,7 +122,7 @@ export default function AlertList({ alerts: initial }: Props) {
                   <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {timeAgo(alert.created_at)}
-                    {alert.resolved_at && ` · Cozuldu: ${timeAgo(alert.resolved_at)}`}
+                    {alert.resolved_at && ` · Çözüldü: ${timeAgo(alert.resolved_at)}`}
                   </p>
                 </div>
               </div>
@@ -133,7 +133,7 @@ export default function AlertList({ alerts: initial }: Props) {
                   className="flex-shrink-0 flex items-center gap-1.5 bg-white border border-gray-300 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
                 >
                   <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                  {resolving === alert.id ? 'Isleniyor...' : 'Cozuldu'}
+                  {resolving === alert.id ? 'İşleniyor...' : 'Çözüldü'}
                 </button>
               )}
             </div>
