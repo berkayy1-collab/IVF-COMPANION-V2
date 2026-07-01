@@ -30,19 +30,26 @@ export default async function PatientsPage({
 
   if (sf !== "all") query = query.eq("status", sf)
 
-  const { data: patients, error } = await query
+  const { data: patientsRaw, error } = await query
 
-  const userIds = (patients || []).map((p: any) => p.user_id).filter(Boolean)
+  const userIds = (patientsRaw || []).map((p: any) => p.user_id).filter(Boolean)
   let userMap: Record<string, any> = {}
   if (userIds.length > 0) {
     const { data: usersData } = await supabase
       .from("users")
-      .select("id, first_name, last_name, email")
+      .select("id, first_name, last_name, email, role")
       .in("id", userIds)
     if (usersData) {
       usersData.forEach((u: any) => { userMap[u.id] = u })
     }
   }
+
+  // Personel hesapları (nurse, doctor, clinic_admin, super_admin) yanlışlıkla
+  // hasta kayıt linkinden geçmiş olsa bile Hastalar listesinde görünmesin.
+  const patients = (patientsRaw || []).filter((p: any) => {
+    const role = userMap[p.user_id]?.role
+    return !role || role === "patient"
+  })
 
   const filtered = (patients || []).filter((p: any) => {
     if (!q) return true

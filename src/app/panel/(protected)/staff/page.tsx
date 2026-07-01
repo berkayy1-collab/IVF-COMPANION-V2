@@ -36,6 +36,14 @@ export default async function StaffPage() {
     .in('role', ['nurse', 'doctor', 'clinic_admin', 'super_admin'])
     .order('created_at', { ascending: false })
 
+  const { data: clinicInfo } = await supabase
+    .from('clinics')
+    .select('slug')
+    .eq('id', appUser.clinic_id)
+    .single()
+
+  const staffRegisterPath = clinicInfo?.slug ? `/clinic/${clinicInfo.slug}/staff-register` : null
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -82,14 +90,16 @@ export default async function StaffPage() {
       <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
         <p className="text-sm font-semibold text-amber-800 mb-1">Yeni Personel Eklemek İçin</p>
         <p className="text-sm text-amber-700">
-          Personelin önce sisteme kayıt olması, ardından Supabase SQL Editor ile rolünün ayarlanması gerekir:
+          Aşağıdaki adresi, kendi site adresinizin (Codespace linkinizin) sonuna ekleyerek yeni hemşire veya doktorunuzla paylaşın. Formu doldurup kaydolduklarında otomatik olarak personel hesabı açılır ve doğrudan bu listede görünürler.
         </p>
-        <pre className="mt-2 text-xs bg-amber-100 rounded p-3 text-amber-900 font-mono overflow-x-auto whitespace-pre-wrap">
-{`UPDATE public.users
-SET role = 'nurse',
-    clinic_id = '${appUser.clinic_id}'
-WHERE email = 'yeni@personel.com';`}
-        </pre>
+        {staffRegisterPath && (
+          <div className="mt-3 bg-white border border-amber-200 rounded-lg px-3 py-2">
+            <code className="text-xs text-amber-900 break-all">{staffRegisterPath}</code>
+          </div>
+        )}
+        <p className="mt-2 text-xs text-amber-600">
+          Bu linki yalnızca güvendiğiniz kişilerle paylaşın — link üzerinden kayıt olan herkes hemşire/doktor yetkisiyle sisteme erişebilir.
+        </p>
       </div>
     </div>
   )
