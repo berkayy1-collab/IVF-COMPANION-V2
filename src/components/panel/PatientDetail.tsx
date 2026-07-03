@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   User, Calendar, Pill, Activity, MessageSquare, FileText,
@@ -42,6 +43,9 @@ export default function PatientDetail({
   const [tab, setTab] = useState<Tab>('overview')
   const [status, setStatus] = useState<string>(patient.status)
   const [startedElsewhere, setStartedElsewhere] = useState<boolean>(patient.started_elsewhere ?? false)
+  const [savingStatus, setSavingStatus] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
+  const statusDirty = status !== patient.status || startedElsewhere !== (patient.started_elsewhere ?? false)
   const [meds, setMeds] = useState(medications)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [messages, setMessages] = useState(initialMessages)
@@ -51,6 +55,7 @@ export default function PatientDetail({
   const [addingNote, setAddingNote] = useState(false)
   const [notes, setNotes] = useState(clinicalNotes)
   const supabase = createClient()
+  const router = useRouter()
   const u = patient.users as any
   const fullName = u?.full_name ?? '—'
   const dayCount = transferDayCount(patient.transfer_date)
@@ -81,22 +86,32 @@ export default function PatientDetail({
     setNoteBody('')
     setAddingNote(false)
   }
-  async function toggleNotStarted() {
-    const newStatus = status === 'not_started' ? 'active' : 'not_started'
-    const { error } = await supabase.from('patients').update({ status: newStatus }).eq('id', patient.id)
-    if (!error) {
-      setStatus(newStatus)
-    } else {
-      alert('Durum güncellenemedi: ' + error.message)
-    }
+  function toggleNotStarted() {
+    setStatus(prev => (prev === 'not_started' ? 'active' : 'not_started'))
+    setStatusMessage('')
   }
-  async function toggleStartedElsewhere() {
-    const newValue = !startedElsewhere
-    const { error } = await supabase.from('patients').update({ started_elsewhere: newValue }).eq('id', patient.id)
-    if (!error) {
-      setStartedElsewhere(newValue)
+  function toggleStartedElsewhere() {
+    setStartedElsewhere(prev => !prev)
+    setStatusMessage('')
+  }
+  function cancelStatusChanges() {
+    setStatus(patient.status)
+    setStartedElsewhere(patient.started_elsewhere ?? false)
+    setStatusMessage('')
+  }
+  async function saveStatusChanges() {
+    setSavingStatus(true)
+    setStatusMessage('')
+    const { error } = await supabase.from('patients').update({
+      status,
+      started_elsewhere: startedElsewhere,
+    }).eq('id', patient.id)
+    setSavingStatus(false)
+    if (error) {
+      setStatusMessage('Hata: ' + error.message)
     } else {
-      alert('Güncellenemedi: ' + error.message)
+      setStatusMessage('Kaydedildi.')
+      router.refresh()
     }
   }
   async function deleteMedication(id: string) {
@@ -138,19 +153,37 @@ export default function PatientDetail({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <label className="flex items-center gap-1.5 text-xs font-medium text-orange-700 border border-orange-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-orange-50 transition-colors">
-            <input type="checkbox" checked={status === 'not_started'} onChange={toggleNotStarted} className="accent-orange-600" />
-            Tedaviye Başlanmadı
-          </label>
-          <label className="flex items-center gap-1.5 text-xs font-medium text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-50 transition-colors">
-            <input type="checkbox" checked={startedElsewhere} onChange={toggleStartedElsewhere} className="accent-blue-600" />
-            Tedaviye Farklı Bir Merkezde Başladı
-          </label>
-          <Link href={`/panel/patients/${patient.id}/profile`}
-            className="flex items-center gap-1.5 text-sm text-rose-600 hover:text-rose-700 border border-rose-200 rounded-lg px-3 py-1.5 hover:bg-rose-50 transition-colors">
-            <ExternalLink className="w-3.5 h-3.5" /> Profili Düzenle
-          </Link>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-xs font-medium text-orange-700 border border-orange-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-orange-50 transition-colors">
+              <input type="checkbox" checked={status === 'not_started'} onChange={toggleNotStarted} className="accent-orange-600" />
+              Tedaviye Başlanmadı
+            </label>
+            <label className="flex items-center gap-1.5 text-xs font-medium text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-50 transition-colors">
+              <input type="checkbox" checked={startedElsewhere} onChange={toggleStartedElsewhere} className="accent-blue-600" />
+              Tedaviye Farklı Bir Merkezde Başladı
+            </label>
+            {statusDirty && (
+              <button type="button" onClick={cancelStatusChanges} disabled={savingStatus}
+                className="text-sm text-gray-500 hover:text-gray-700 border rounded-lg px-3 py-1.5 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+                İptal
+              </button>
+            )}
+            <button type="button" onClick={saveStatusChanges} disabled={!statusDirty || savingStatus}
+              className="flex items-center gap-1.5 text-sm font-medium text-white bg-rose-600 rounded-lg px-3 py-1.5 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {savingStatus ? 'Kaydediliyor...' : 'Kaydet'}
+            </button>
+            <Link href={`/panel/patients/${patient.id}/profile`}
+              className="flex items-center gap-1.5 text-sm text-rose-600 hover:text-rose-700 border border-rose-200 rounded-lg px-3 py-1.5 hover:bg-rose-50 transition-colors">
+              <ExternalLink className="w-3.5 h-3.5" /> Profili Düzenle
+            </Link>
+          </div>
+          {statusMessage && (
+            <p className={`text-xs font-medium ${statusMessage.startsWith('Hata') ? 'text-red-600' : 'text-green-600'}`}>{statusMessage}</p>
+          )}
+          {statusDirty && !statusMessage && (
+            <p className="text-xs text-amber-600 font-medium">Kaydedilmemiş değişiklikler var — "Kaydet"e basmazsan geçersiz olur.</p>
+          )}
         </div>
       </div>
       <div className="flex gap-1 border-b mb-6 overflow-x-auto">
@@ -279,7 +312,6 @@ export default function PatientDetail({
           {meds.length === 0 && <p className="text-sm text-gray-400 text-center py-8">Henüz ilaç eklenmemiş.</p>}
           {meds.map((med: any) => (
             <div key={med.id} className="bg-white border rounded-xl overflow-hidden">
-              {/* İlaç başlık */}
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-gray-900">{med.name}</p>
