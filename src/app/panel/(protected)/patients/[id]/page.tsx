@@ -28,7 +28,7 @@ export default async function PatientDetailPage({
     { data: notes },
   ] = await Promise.all([
     supabase.from("patients").select(
-      "id, status, transfer_date, beta_hcg_date, created_at, user_id, clinic_id, phone, city, date_of_birth, blood_type, allergies, chronic_conditions, previous_ivf_count, embryo_count, emergency_contact_name, emergency_contact_phone, anamnesis_file_url, notes"
+      "id, status, started_elsewhere, transfer_date, beta_hcg_date, created_at, user_id, clinic_id, phone, city, date_of_birth, blood_type, allergies, chronic_conditions, previous_ivf_count, embryo_count, emergency_contact_name, emergency_contact_phone, anamnesis_file_url, notes"
     ).eq("id", id).eq("clinic_id", appUser.clinic_id).single(),
     supabase.from("medications").select("*").eq("patient_id", id).order("created_at"),
     supabase.from("symptom_logs").select("*").eq("patient_id", id).order("created_at", { ascending: false }).limit(30),
@@ -96,9 +96,10 @@ export default async function PatientDetailPage({
       patient={patientWithUser}
       medications={medications || []}
       symptomLogs={symptomLogs || []}
-      notes={notesWithAuthors}
+      clinicalNotes={notesWithAuthors}
       messages={messages}
       conversationId={conversation?.id || null}
+      currentUserId={user.id}
     />
   )
 }

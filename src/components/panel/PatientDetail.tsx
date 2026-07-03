@@ -41,6 +41,7 @@ export default function PatientDetail({
 }: Props) {
   const [tab, setTab] = useState<Tab>('overview')
   const [status, setStatus] = useState<string>(patient.status)
+  const [startedElsewhere, setStartedElsewhere] = useState<boolean>(patient.started_elsewhere ?? false)
   const [meds, setMeds] = useState(medications)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [messages, setMessages] = useState(initialMessages)
@@ -89,6 +90,15 @@ export default function PatientDetail({
       alert('Durum güncellenemedi: ' + error.message)
     }
   }
+  async function toggleStartedElsewhere() {
+    const newValue = !startedElsewhere
+    const { error } = await supabase.from('patients').update({ started_elsewhere: newValue }).eq('id', patient.id)
+    if (!error) {
+      setStartedElsewhere(newValue)
+    } else {
+      alert('Güncellenemedi: ' + error.message)
+    }
+  }
   async function deleteMedication(id: string) {
     if (!confirm('Bu ilacı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) return
     setDeletingId(id)
@@ -132,6 +142,10 @@ export default function PatientDetail({
           <label className="flex items-center gap-1.5 text-xs font-medium text-orange-700 border border-orange-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-orange-50 transition-colors">
             <input type="checkbox" checked={status === 'not_started'} onChange={toggleNotStarted} className="accent-orange-600" />
             Tedaviye Başlanmadı
+          </label>
+          <label className="flex items-center gap-1.5 text-xs font-medium text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-blue-50 transition-colors">
+            <input type="checkbox" checked={startedElsewhere} onChange={toggleStartedElsewhere} className="accent-blue-600" />
+            Tedaviye Farklı Bir Merkezde Başladı
           </label>
           <Link href={`/panel/patients/${patient.id}/profile`}
             className="flex items-center gap-1.5 text-sm text-rose-600 hover:text-rose-700 border border-rose-200 rounded-lg px-3 py-1.5 hover:bg-rose-50 transition-colors">

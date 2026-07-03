@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     supabase.from('patients').select('id', { count: 'exact', head: true }),
     supabase.from('alerts').select('id, message, severity, created_at, patients(id, users(first_name, last_name))').eq('status', 'open').order('created_at', { ascending: false }).limit(5),
     supabase.from('conversations').select('id, last_message_at, patients(id, users(first_name, last_name))').order('last_message_at', { ascending: false, nullsFirst: false }).limit(5),
-    supabase.from('patients').select('id, created_at, users(first_name, last_name)').eq('status', 'not_started').order('created_at', { ascending: false }).limit(5),
+    supabase.from('patients').select('id, created_at, started_elsewhere, users(first_name, last_name)').eq('status', 'not_started').order('created_at', { ascending: false }).limit(5),
   ])
 
   const notStartedCount = notStartedPatients ?? 0
@@ -76,7 +76,9 @@ export default async function DashboardPage() {
               <Link key={patient.id} href={`/panel/patients/${patient.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
                 <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center text-sm font-bold flex-shrink-0">{name[0]?.toUpperCase()}</div>
                 <div className="flex-1"><p className="text-sm font-medium text-gray-900">{name}</p></div>
-                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700 flex-shrink-0">Tedaviye Başlanmadı</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${patient.started_elsewhere ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                  {patient.started_elsewhere ? 'Tedaviye Farklı Bir Merkezde Başladı' : 'Tedaviye Hiç Başlamadı'}
+                </span>
               </Link>
             )
           })}
@@ -133,4 +135,3 @@ export default async function DashboardPage() {
     </div>
   )
 }
-

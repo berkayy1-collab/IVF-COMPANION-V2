@@ -24,7 +24,7 @@ export default async function PatientsPage({
 
   let query = supabase
     .from("patients")
-    .select("id, transfer_date, status, created_at, user_id")
+    .select("id, transfer_date, status, started_elsewhere, created_at, user_id")
     .eq("clinic_id", appUser.clinic_id)
     .order("created_at", { ascending: false })
 
@@ -133,9 +133,15 @@ export default async function PatientsPage({
                       <div className="text-sm text-gray-500">{email}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={"px-2 py-1 rounded-full text-xs font-medium " + (statusColors[patient.status] || "bg-gray-100 text-gray-600")}>
-                        {statusLabels[patient.status] || patient.status}
-                      </span>
+                      {patient.status === "not_started" && patient.started_elsewhere ? (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                          Tedaviye Farklı Bir Merkezde Başladı
+                        </span>
+                      ) : (
+                        <span className={"px-2 py-1 rounded-full text-xs font-medium " + (statusColors[patient.status] || "bg-gray-100 text-gray-600")}>
+                          {statusLabels[patient.status] || patient.status}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {patient.transfer_date ? new Date(patient.transfer_date).toLocaleDateString("tr-TR") : "-"}
