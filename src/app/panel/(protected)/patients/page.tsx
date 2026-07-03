@@ -44,8 +44,6 @@ export default async function PatientsPage({
     }
   }
 
-  // Personel hesapları (nurse, doctor, clinic_admin, super_admin) yanlışlıkla
-  // hasta kayıt linkinden geçmiş olsa bile Hastalar listesinde görünmesin.
   const patients = (patientsRaw || []).filter((p: any) => {
     const role = userMap[p.user_id]?.role
     return !role || role === "patient"
@@ -60,11 +58,13 @@ export default async function PatientsPage({
   })
 
   const statusColors: Record<string, string> = {
+    not_started: "bg-orange-100 text-orange-700",
     active: "bg-green-100 text-green-700",
     completed: "bg-blue-100 text-blue-700",
     cancelled: "bg-red-100 text-red-700",
   }
   const statusLabels: Record<string, string> = {
+    not_started: "Tedaviye Başlanmadı",
     active: "Aktif",
     completed: "Tamamlandı",
     cancelled: "İptal",
@@ -82,8 +82,8 @@ export default async function PatientsPage({
         </Link>
       </div>
 
-      <div className="flex gap-3 mb-4">
-        {["all", "active", "completed", "cancelled"].map(s => (
+      <div className="flex gap-3 mb-4 flex-wrap">
+        {["all", "not_started", "active", "completed", "cancelled"].map(s => (
           <Link
             key={s}
             href={`/panel/patients?status=${s}${q ? "&q=" + q : ""}`}
@@ -93,7 +93,7 @@ export default async function PatientsPage({
                 : "bg-white text-gray-600 border-gray-200 hover:border-rose-300"
             }`}
           >
-            {s === "all" ? "Tümü" : s === "active" ? "Aktif" : s === "completed" ? "Tamamlandı" : "İptal"}
+            {s === "all" ? "Tümü" : statusLabels[s]}
           </Link>
         ))}
       </div>
